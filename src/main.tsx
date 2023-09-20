@@ -2,14 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import Stats from "three/examples/jsm/libs/stats.module";
-// import React from "react";
-// import ReactDOM from "react-dom/client";
-// import App from "./App";
-// import "./index.css";
-
-// import * as THREE from "three";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-// import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GUI } from "dat.gui";
 // import Stats from "three/examples/jsm/libs/stats.module";
 // import gsap from "gsap";
 // import ScrollTrigger from "gsap/dist/ScrollTrigger";
@@ -453,12 +447,17 @@ console.clear();
 // }
 
 // loadModel();
+
 const scene = new THREE.Scene();
 scene.add(new THREE.AxesHelper(5));
 
-const light = new THREE.PointLight(0xffffff, 1000);
-light.position.set(2.5, 7.5, 15);
-scene.add(light);
+const light1 = new THREE.PointLight(0xffffff, 100);
+light1.position.set(2.5, 2.5, 2.5);
+scene.add(light1);
+
+const light2 = new THREE.PointLight(0xffffff, 100);
+light2.position.set(-2.5, 2.5, 2.5);
+scene.add(light2);
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -466,7 +465,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.z = 3;
+camera.position.set(0.8, 0, 1.0);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -474,20 +473,109 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.target.set(0, 1, 0);
 
 // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
 
-const objLoader = new OBJLoader();
-objLoader.load(
-  "https://assets.codepen.io/557388/1405+Plane_1.obj",
-  (object) => {
-    // (object.children[0] as THREE.Mesh).material = material
-    // object.traverse(function (child) {
-    //     if ((child as THREE.Mesh).isMesh) {
-    //         (child as THREE.Mesh).material = material
-    //     }
-    // })
-    scene.add(object);
+// const objLoader = new OBJLoader();
+// objLoader.load(
+//   "https://assets.codepen.io/557388/1405+Plane_1.obj",
+//   (object) => {
+//     // (object.children[0] as THREE.Mesh).material = material
+//     // object.traverse(function (child) {
+//     //     if ((child as THREE.Mesh).isMesh) {
+//     //         (child as THREE.Mesh).material = material
+//     //     }
+//     // })
+//     scene.add(object);
+//   },
+//   (xhr) => {
+//     console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+//   },
+//   (error) => {
+//     console.log(error);
+//   }
+// );
+// Instantiate a loader
+
+let mixer: THREE.AnimationMixer;
+let modelReady = false;
+const animationActions: THREE.AnimationAction[] = [];
+let activeAction: THREE.AnimationAction;
+let lastAction: THREE.AnimationAction;
+const gltfLoader = new GLTFLoader();
+
+gltfLoader.load(
+  "./src/plane/scene.gltf",
+  (gltf) => {
+    // gltf.scene.scale.set(.01, .01, .01)
+
+    mixer = new THREE.AnimationMixer(gltf.scene);
+
+    const animationAction = mixer.clipAction((gltf as any).animations[0]);
+    animationActions.push(animationAction);
+    animationsFolder.add(animations, "default");
+    activeAction = animationActions[0];
+
+    scene.add(gltf.scene);
+
+    //add an animation from another file
+    gltfLoader.load(
+      "./src/plane/scene.gltf",
+      (gltf) => {
+        console.log("loaded 1");
+        const animationAction = mixer.clipAction((gltf as any).animations[0]);
+        animationActions.push(animationAction);
+        animationsFolder.add(animations, "1");
+
+        //add an animation from another file
+        gltfLoader.load(
+          "./src/plane/scene.gltf",
+          (gltf) => {
+            console.log("loaded 2");
+            const animationAction = mixer.clipAction(
+              (gltf as any).animations[0]
+            );
+            animationActions.push(animationAction);
+            animationsFolder.add(animations, "2");
+
+            //add an animation from another file
+            gltfLoader.load(
+              "./src/plane/scene.gltf",
+              (gltf) => {
+                console.log("loaded 3");
+                (gltf as any).animations[0].tracks.shift(); //delete the specific track that moves the object forward while running
+                const animationAction = mixer.clipAction(
+                  (gltf as any).animations[0]
+                );
+                animationActions.push(animationAction);
+                animationsFolder.add(animations, "3");
+
+                modelReady = true;
+              },
+              (xhr) => {
+                console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+              },
+              (error) => {
+                console.log(error);
+              }
+            );
+          },
+          (xhr) => {
+            console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   },
   (xhr) => {
     console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
@@ -496,7 +584,34 @@ objLoader.load(
     console.log(error);
   }
 );
+// Optional: Provide a DRACOLoader instance to decode compressed mesh data
+// const dracoLoader = new DRACOLoader();
+// dracoLoader.setDecoderPath("/examples/jsm/libs/draco/");
+// loader.setDRACOLoader(dracoLoader);
 
+// Load a glTF resource
+// loader.load(
+//   // resource URL
+//   "./src/plane/scene.gltf",
+//   // called when the resource is loaded
+//   function (gltf) {
+//     scene.add(gltf.scene);
+
+//     gltf.animations; // Array<THREE.AnimationClip>
+//     gltf.scene; // THREE.Group
+//     gltf.scenes; // Array<THREE.Group>
+//     gltf.cameras; // Array<THREE.Camera>
+//     gltf.asset; // Object
+//   },
+//   // called while loading is progressing
+//   function (xhr) {
+//     console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+//   },
+//   // called when loading has errors
+//   function (error) {
+//     console.log("An error happened");
+//   }
+// );
 window.addEventListener("resize", onWindowResize, false);
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -508,10 +623,45 @@ function onWindowResize() {
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
+const animations = {
+  default: function () {
+    setAction(animationActions[0]);
+  },
+  1: function () {
+    setAction(animationActions[1]);
+  },
+  2: function () {
+    setAction(animationActions[2]);
+  },
+  3: function () {
+    setAction(animationActions[3]);
+  },
+};
+
+const setAction = (toAction: THREE.AnimationAction) => {
+  if (toAction != activeAction) {
+    lastAction = activeAction;
+    activeAction = toAction;
+    //lastAction.stop()
+    lastAction.fadeOut(1);
+    activeAction.reset();
+    activeAction.fadeIn(1);
+    activeAction.play();
+  }
+};
+
+const gui = new GUI();
+const animationsFolder = gui.addFolder("Animations");
+animationsFolder.open();
+
+const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
 
   controls.update();
+
+  if (modelReady) mixer.update(clock.getDelta());
 
   render();
 
