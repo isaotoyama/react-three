@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/gsap": "^3.0.0",
     "@types/three": "^0.156.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "three": "^0.156.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

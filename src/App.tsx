@@ -1,5 +1,4 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import "./App.css";
 
 function App() {
@@ -41,18 +40,11 @@ function App() {
 
       <div className="blueprint">
         <svg width="100%" height="100%" viewBox="0 0 100 100">
-          <line
-            id="line-length"
-            x1="10"
-            y1="80"
-            x2="90"
-            y2="80"
-            stroke-width="0.5"
-          ></line>
+          <line id="line-length" x1="10" y1="80" x2="90" y2="80"></line>
           <path
             id="line-wingspan"
             d="M10 50, L40 35, M60 35 L90 50"
-            stroke-width="0.5"
+            // stroke-width="0.5"
           ></path>
           <circle
             id="circle-phalange"
@@ -60,7 +52,7 @@ function App() {
             cy="60"
             r="15"
             fill="transparent"
-            stroke-width="0.5"
+            // stroke-width="0.5"
           ></circle>
         </svg>
         <div className="section dark ">
@@ -88,23 +80,6 @@ function App() {
         <div className="section"></div>
         <div className="section end">
           <h2>Fin.</h2>
-          <ul className="credits">
-            <li>
-              Plane model by{" "}
-              <a
-                href="https://poly.google.com/view/8ciDd9k8wha"
-                target="_blank"
-              >
-                Google
-              </a>
-            </li>
-            <li>
-              Animated using{" "}
-              <a href="https://greensock.com/scrolltrigger/" target="_blank">
-                GSAP ScrollTrigger
-              </a>
-            </li>
-          </ul>
         </div>
       </div>
     </div>
