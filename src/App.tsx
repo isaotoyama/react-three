@@ -12,7 +12,6 @@ import ScrollTrigger from "gsap/dist/ScrollTrigger";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
   // clearing the console (just a CodePen thing)
 
   console.clear();
@@ -28,39 +27,31 @@ function App() {
   // setupAnimation which creates a new Scene
 
   class Scene {
-    renderer = new THREE.WebGLRenderer();
-    views: any;
-    w!: number;
-    h!: number;
-    modelGroup: any;
-    constructor(model: {
-      children: { geometry: any }[];
-      layers: { set: (arg0: number) => void };
-    }) {
-      const views = [
+    constructor(model) {
+      this.views = [
         { bottom: 0, height: 1 },
         { bottom: 0, height: 0 },
       ];
 
-      const renderer = new THREE.WebGLRenderer({
+      this.renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
       });
 
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.setPixelRatio(window.devicePixelRatio);
 
-      document.body.appendChild(renderer.domElement);
+      document.body.appendChild(this.renderer.domElement);
 
       // scene
 
-      const scene = new THREE.Scene();
+      this.scene = new THREE.Scene();
 
-      for (var ii = 0; ii < views.length; ++ii) {
-        const view = views[ii];
-        const camera = new THREE.PerspectiveCamera(
+      for (var ii = 0; ii < this.views.length; ++ii) {
+        var view = this.views[ii];
+        var camera = new THREE.PerspectiveCamera(
           45,
           window.innerWidth / window.innerHeight,
           1,
@@ -75,22 +66,22 @@ function App() {
 
       //light
 
-      const light = new THREE.PointLight(0xffffff, 0.75);
-      light.position.z = 150;
-      light.position.x = 70;
-      light.position.y = -20;
-      scene.add(light);
+      this.light = new THREE.PointLight(0xffffff, 0.75);
+      this.light.position.z = 150;
+      this.light.position.x = 70;
+      this.light.position.y = -20;
+      this.scene.add(this.light);
 
-      const softLight = new THREE.AmbientLight(0xffffff, 1.5);
-      scene.add(softLight);
+      this.softLight = new THREE.AmbientLight(0xffffff, 1.5);
+      this.scene.add(this.softLight);
 
       // group
 
       this.onResize();
       window.addEventListener("resize", this.onResize, false);
 
-      const edges = new THREE.EdgesGeometry(model.children[0].geometry);
-      const line = new THREE.LineSegments(edges);
+      var edges = new THREE.EdgesGeometry(model.children[0].geometry);
+      let line = new THREE.LineSegments(edges);
       line.material.depthTest = false;
       line.material.opacity = 0.5;
       line.material.transparent = true;
@@ -98,18 +89,18 @@ function App() {
       line.position.z = -1;
       line.position.y = 0.2;
 
-      const modelGroup = new THREE.Group();
+      this.modelGroup = new THREE.Group();
 
       model.layers.set(0);
       line.layers.set(1);
 
-      modelGroup.add(model);
-      modelGroup.add(line);
-      scene.add(modelGroup);
+      this.modelGroup.add(model);
+      this.modelGroup.add(line);
+      this.scene.add(this.modelGroup);
     }
 
     render = () => {
-      for (var ii = 0; ii < view.length; ++ii) {
+      for (var ii = 0; ii < this.views.length; ++ii) {
         var view = this.views[ii];
         var camera = view.camera;
 
@@ -121,7 +112,7 @@ function App() {
         this.renderer.setScissorTest(true);
 
         camera.aspect = this.w / this.h;
-        this.renderer.render(Scene, camera);
+        this.renderer.render(this.scene, camera);
       }
     };
 
@@ -150,10 +141,10 @@ function App() {
     gsap.set("#line-wingspan", { drawSVG: 0 });
     gsap.set("#circle-phalange", { drawSVG: 0 });
 
-    let object: unknown;
+    var object;
 
     function onModelLoaded() {
-      object.traverse(function (child: { material: THREE.MeshPhongMaterial }) {
+      object.traverse(function (child) {
         let mat = new THREE.MeshPhongMaterial({
           color: 0x171511,
           specular: 0xd0cbc7,
@@ -170,7 +161,7 @@ function App() {
     manager.onProgress = (item, loaded, total) =>
       console.log(item, loaded, total);
 
-    var loader = new THREE.Loader(manager);
+    var loader = new THREE.OBJLoader(manager);
     loader.load(
       "https://assets.codepen.io/557388/1405+Plane_1.obj",
       function (obj) {
@@ -179,7 +170,7 @@ function App() {
     );
   }
 
-  function setupAnimation(model: unknown) {
+  function setupAnimation(model) {
     let scene = new Scene(model);
     let plane = scene.modelGroup;
 
@@ -435,86 +426,6 @@ function App() {
   }
 
   loadModel();
-  return (
-    <div className="content">
-      <div className="loading">Loading</div>
-      <div className="trigger"></div>
-      <div className="section">
-        <h1>Airplanes.</h1>
-        <h3>The beginners guide.</h3>
-        <p>You've probably forgotten what these are.</p>
-        <div className="scroll-cta">Scroll</div>
-      </div>
-
-      <div className="section right">
-        <h2>They're kinda like buses...</h2>
-      </div>
-
-      <div className="ground-container">
-        <div className="parallax ground"></div>
-        <div className="section right">
-          <h2>..except they leave the ground.</h2>
-          <p>Saaay what!?.</p>
-        </div>
-
-        <div className="section">
-          <h2>They fly through the sky.</h2>
-          <p>For realsies!</p>
-        </div>
-
-        <div className="section right">
-          <h2>Defying all known physical laws.</h2>
-          <p>It's actual magic!</p>
-        </div>
-        <div className="parallax clouds"></div>
-      </div>
-
-      <div className="blueprint">
-        <svg width="100%" height="100%" viewBox="0 0 100 100">
-          <line id="line-length" x1="10" y1="80" x2="90" y2="80"></line>
-          <path
-            id="line-wingspan"
-            d="M10 50, L40 35, M60 35 L90 50"
-            // stroke-width="0.5"
-          ></path>
-          <circle
-            id="circle-phalange"
-            cx="60"
-            cy="60"
-            r="15"
-            fill="transparent"
-            // stroke-width="0.5"
-          ></circle>
-        </svg>
-        <div className="section dark ">
-          <h2>The facts and figures.</h2>
-          <p>Lets get into the nitty gritty...</p>
-        </div>
-        <div className="section dark length">
-          <h2>Length.</h2>
-          <p>Long.</p>
-        </div>
-        <div className="section dark wingspan">
-          <h2>Wing Span.</h2>
-          <p>I dunno, longer than a cat probably.</p>
-        </div>
-        <div className="section dark phalange">
-          <h2>Left Phalange</h2>
-          <p>Missing</p>
-        </div>
-        <div className="section dark">
-          <h2>Engines</h2>
-          <p>Turbine funtime</p>
-        </div>
-      </div>
-      <div className="sunset">
-        <div className="section"></div>
-        <div className="section end">
-          <h2>Fin.</h2>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default App;
